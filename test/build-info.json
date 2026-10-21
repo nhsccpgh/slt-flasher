@@ -1,21 +1,18 @@
 {
   "channel": "test",
   "ref": "dev",
-  "commit": "39a069a",
-  "built": "2026-10-21T03:49:29Z",
-  "run": "https://github.com/nhsccpgh/SuperLiveTimer/actions/runs/39539399418",
+  "commit": "48b09c0",
+  "built": "2026-10-21T04:10:25Z",
+  "run": "https://github.com/nhsccpgh/SuperLiveTimer/actions/runs/39541701843",
   "cores": [
-    "Heltec-esp32:esp32@3.0.3",
-    "esp32:esp32@3.3.8"
+    "Heltec-esp32:esp32@3.3.8"
   ],
   "libraries": [
-    "Heltec ESP32 Dev-Boards@2.1.5",
+    "Heltec ESP32 Dev-Boards@2.1.6",
     "Adafruit GFX Library@1.12.6",
     "Adafruit BusIO@1.17.4",
     "Bounce2@2.71.0",
     "TFT_eSPI@2.5.43",
-    "heltec-eink-modules@4.6.0",
-    "RadioLib@7.6.0",
-    "ESP8266 and ESP32 OLED driver for SSD1306 displays@4.6.2"
+    "heltec-eink-modules@4.6.0"
   ]
 }
