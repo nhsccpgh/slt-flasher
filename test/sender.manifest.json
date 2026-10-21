@@ -1,9 +1,9 @@
 {
   "name": "SuperLiveTimer Sender (Heltec WiFi LoRa 32 V3) (test build)",
-  "version": "v1.1",
+  "version": "v1.1-2-gf5addc7",
   "new_install_prompt_erase": true,
   "new_install_improv_wait_time": 0,
   "builds": [
-    { "chipFamily": "ESP32-S3", "parts": [ { "path": "sender-v1.1.bin", "offset": 0 } ] }
+    { "chipFamily": "ESP32-S3", "parts": [ { "path": "sender-v1.1-2-gf5addc7.bin", "offset": 0 } ] }
   ]
 }
