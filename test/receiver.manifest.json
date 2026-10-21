@@ -1,0 +1,9 @@
+{
+  "name": "SuperLiveTimer Base Receiver (Heltec WiFi LoRa 32 V3) (test build)",
+  "version": "git-7710658",
+  "new_install_prompt_erase": true,
+  "new_install_improv_wait_time": 0,
+  "builds": [
+    { "chipFamily": "ESP32-S3", "parts": [ { "path": "receiver-git-7710658.bin", "offset": 0 } ] }
+  ]
+}
