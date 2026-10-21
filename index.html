@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SuperLiveTimer Flasher</title>
+<script type="module" src="https://unpkg.com/esp-web-tools@10.1.1/dist/web/install-button.js?module"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/spark-md5/3.0.2/spark-md5.min.js"></script>
+<style>
+  :root { --bg: #f6f7f9; --card: #fff; --text: #1a1d21; --dim: #5b6470; --line: #dde1e6; --accent: #2b6cdf; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #14171b; --card: #1d2126; --text: #e8eaed; --dim: #9aa3ad; --line: #2e343b; --accent: #5b93f0; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.5 system-ui, -apple-system, sans-serif; }
+  main { max-width: 720px; margin: 0 auto; padding: 32px 16px 48px; }
+  h1 { font-size: 1.6rem; margin: 0 0 4px; }
+  p.lead { color: var(--dim); margin: 0 0 24px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; margin-bottom: 12px;
+          display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+  .card h2 { font-size: 1.05rem; margin: 0; }
+  .card small { color: var(--dim); }
+  esp-web-install-button { --esp-tools-button-color: var(--accent); }
+  ol { padding-left: 20px; color: var(--dim); }
+  .note { color: var(--dim); font-size: 0.9rem; margin-top: 24px; }
+  .card > div { flex: 1 1 280px; }
+  h2.section { font-size: 1.1rem; margin: 28px 0 12px; }
+  .pill { cursor: pointer; font-size: 14px; font-weight: 500; padding: 10px 24px; color: #fff;
+          background: var(--accent); border: none; border-radius: 9999px; }
+  .pill:disabled { opacity: 0.5; cursor: default; }
+  #license-log { flex-basis: 100%; margin: 0; padding: 10px 12px; background: var(--bg); border: 1px solid var(--line);
+                 border-radius: 8px; font-size: 0.85rem; white-space: pre-wrap; word-break: break-all; }
+</style>
+</head>
+<body>
+<main>
+  <h1>SuperLiveTimer Firmware</h1>
+  <p class="lead">Flash a SuperLiveTimer device straight from your browser. Needs Chrome or Edge on a computer (not a phone).</p>
+
+  <h2 class="section">Handhelds</h2>
+  <div class="card">
+    <div><h2>Handheld Receiver</h2><small>Heltec WiFi LoRa 32 V3 · OLED</small></div>
+    <esp-web-install-button manifest="handheld-receiver.manifest.json"></esp-web-install-button>
+  </div>
+  <div class="card">
+    <div><h2>TFT Receiver</h2><small>Heltec Vision Master T190 · color screen</small></div>
+    <esp-web-install-button manifest="vmt190.manifest.json"></esp-web-install-button>
+  </div>
+  <div class="card">
+    <div><h2>Barcode Receiver</h2><small>Heltec Wireless Paper · e-ink</small></div>
+    <esp-web-install-button manifest="barcode.manifest.json"></esp-web-install-button>
+  </div>
+  <div class="card">
+    <div><h2>ThinkNode Receiver</h2><small>Elecrow ThinkNode M2 · OLED</small></div>
+    <esp-web-install-button manifest="thinknode-receiver.manifest.json"></esp-web-install-button>
+  </div>
+
+  <h2 class="section">Finish line &amp; LED board</h2>
+  <div class="card">
+    <div><h2>Sender</h2><small>Heltec WiFi LoRa 32 V3 · finish line transmitter</small></div>
+    <esp-web-install-button manifest="sender.manifest.json"></esp-web-install-button>
+  </div>
+  <div class="card">
+    <div><h2>Base Receiver</h2><small>Heltec WiFi LoRa 32 V3 · USB feed to the LED board</small></div>
+    <esp-web-install-button manifest="receiver.manifest.json"></esp-web-install-button>
+  </div>
+
+  <h2 class="section">How to flash</h2>
+  <ol>
+    <li>Plug the device into your computer with a USB-C data cable.</li>
+    <li>Click <b>Connect</b> next to your device and pick its serial port.</li>
+    <li>Click <b>Install</b>, leave <b>Erase device</b> unchecked, then <b>Next</b> and <b>Install</b>. Erasing wipes your saved settings and the Heltec LoRa license.</li>
+    <li>If it won't connect, hold the <b>PRG/BOOT</b> button while plugging in, then try again.</li>
+  </ol>
+  <p class="note">Already running SuperLiveTimer? You can also update over WiFi from the device's config page using the <code>-ota.bin</code> file.</p>
+
+  <h2 class="section">Restore Heltec LoRa license</h2>
+  <div class="card">
+    <div>
+      <h2>Lost license?</h2>
+      <small>Heltec boards only. If a board was erased and its radio stopped working, this reads its chip ID, looks the license up on heltec.cn and writes it back.</small>
+    </div>
+    <button id="license-btn" class="pill" type="button">Restore license</button>
+    <pre id="license-log" hidden></pre>
+  </div>
+</main>
+
+<script type="module">
+  const ESPTOOL_URL = "https://unpkg.com/esptool-js@0.7.0/bundle.js";
+  const LOOKUP_URL = "https://resource.heltec.cn/search";
+
+  const btn = document.getElementById("license-btn");
+  const log = document.getElementById("license-log");
+  const say = (msg) => { log.hidden = false; log.textContent += msg + "\n"; };
+  const quiet = { clean() {}, write() {}, writeLine() {} };
+
+  // Heltec's Chip ID is getEfuseMac() printed as %04X%08X: the MAC bytes reversed.
+  const chipIdFromMac = (mac) => mac.split(":").reverse().join("").toUpperCase();
+
+  async function lookupLicense(chipId) {
+    const resp = await fetch(LOOKUP_URL, { method: "POST", body: new URLSearchParams({ theId: chipId, select_sure: "Confirm" }) });
+    const page = await resp.text();
+    if (page.includes("Without this ID")) throw new Error(`Heltec has no license for ${chipId}. Email support@heltec.cn with proof of purchase.`);
+    const m = page.match(/0x([0-9a-f]{8}),\s*0x([0-9a-f]{8}),\s*0x([0-9a-f]{8}),\s*0x([0-9a-f]{8})/i);
+    if (!m) throw new Error("Couldn't read the license from Heltec's response.");
+    return m.slice(1).map((w) => parseInt(w, 16));
+  }
+
+  // The library keeps the license in the last 4 KB sector of the app/ota_1 partition.
+  function licenseAddr(table) {
+    const dv = new DataView(table.buffer, table.byteOffset, table.byteLength);
+    for (let i = 0; i + 32 <= table.length; i += 32) {
+      if (dv.getUint16(i, true) !== 0x50aa) break;
+      if (table[i + 2] === 0x00 && table[i + 3] === 0x11) return dv.getUint32(i + 4, true) + dv.getUint32(i + 8, true) - 0x1000;
+    }
+    throw new Error("No app1 partition found. Flash SuperLiveTimer onto the board first.");
+  }
+
+  const same = (a, b) => a.length === b.length && a.every((v, i) => v === b[i]);
+
+  // The stub sends an MD5 digest frame after read-flash data that esptool-js
+  // never consumes (esptool-js#218), so the next command reads it as its
+  // response and the link desyncs. Drain it after every read.
+  async function readFlash(loader, addr, size) {
+    const data = await loader.readFlash(addr, size);
+    await loader.transport.read(1000).catch(() => {});
+    return data;
+  }
+
+  const md5 = (img) => SparkMD5.ArrayBuffer.hash(img.buffer.slice(img.byteOffset, img.byteOffset + img.byteLength));
+
+  btn.addEventListener("click", async () => {
+    if (!("serial" in navigator)) { say("This needs Chrome or Edge on a computer."); return; }
+    let port;
+    try { port = await navigator.serial.requestPort(); } catch { return; }
+
+    btn.disabled = true;
+    log.textContent = "";
+    const { ESPLoader, Transport } = await import(ESPTOOL_URL);
+    const transport = new Transport(port);
+    try {
+      const loader = new ESPLoader({ transport, baudrate: 115200, terminal: quiet });
+      say("Connecting...");
+      const chip = await loader.main();
+      if (!chip.startsWith("ESP32-S3")) throw new Error(`This is an ${chip}, not a Heltec ESP32-S3 board.`);
+
+      const chipId = chipIdFromMac(await loader.chip.readMac(loader));
+      say(`Chip ID ${chipId}`);
+      say("Looking up license on heltec.cn...");
+      const words = await lookupLicense(chipId);
+      const cdkey = words.map((w) => w.toString(16).padStart(8, "0").toUpperCase()).join("");
+      say(`License ${cdkey}`);
+
+      say("Reading partition table...");
+      const addr = licenseAddr(await readFlash(loader, 0x8000, 0xc00));
+      const wanted = new Uint8Array(16);
+      words.forEach((w, i) => new DataView(wanted.buffer).setUint32(i * 4, w, true));
+
+      if (same(await readFlash(loader, addr, 16), wanted)) {
+        say("License is already on the board. Nothing to do.");
+      } else {
+        say(`Writing license to 0x${addr.toString(16)}...`);
+        const sector = new Uint8Array(0x1000).fill(0xff);
+        sector.set(wanted);
+        // writeFlash checks the written sector against this MD5 and throws on mismatch.
+        await loader.writeFlash({ fileArray: [{ data: sector, address: addr }], flashMode: "keep", flashFreq: "keep", flashSize: "keep", eraseAll: false, compress: true, calculateMD5Hash: md5 });
+        say("License restored and verified. Restarting the board.");
+      }
+      await loader.after("hard_reset");
+    } catch (e) {
+      say(`Error: ${e.message}`);
+      say("If it won't connect, hold PRG/BOOT while plugging in and try again.");
+    } finally {
+      await transport.disconnect().catch(() => {});
+      btn.disabled = false;
+    }
+  });
+</script>
+</body>
+</html>
