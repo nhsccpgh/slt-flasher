@@ -7,9 +7,11 @@
 <script type="module" src="https://unpkg.com/esp-web-tools@10.1.1/dist/web/install-button.js?module"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/spark-md5/3.0.2/spark-md5.min.js"></script>
 <style>
-  :root { --bg: #f6f7f9; --card: #fff; --text: #1a1d21; --dim: #5b6470; --line: #dde1e6; --accent: #2b6cdf; }
+  :root { --bg: #f6f7f9; --card: #fff; --text: #1a1d21; --dim: #5b6470; --line: #dde1e6; --accent: #2b6cdf;
+          --warn-bg: #fff4d6; --warn-line: #e8b931; --warn-text: #5c4300; }
   @media (prefers-color-scheme: dark) {
-    :root { --bg: #14171b; --card: #1d2126; --text: #e8eaed; --dim: #9aa3ad; --line: #2e343b; --accent: #5b93f0; }
+    :root { --bg: #14171b; --card: #1d2126; --text: #e8eaed; --dim: #9aa3ad; --line: #2e343b; --accent: #5b93f0;
+            --warn-bg: #3a2f0f; --warn-line: #a8821c; --warn-text: #f3d98b; }
   }
   * { box-sizing: border-box; }
   body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.5 system-ui, -apple-system, sans-serif; }
@@ -23,6 +25,13 @@
   esp-web-install-button { --esp-tools-button-color: var(--accent); }
   ol { padding-left: 20px; color: var(--dim); }
   .note { color: var(--dim); font-size: 0.9rem; margin-top: 24px; }
+  .test-banner { background: var(--warn-bg); border: 1px solid var(--warn-line); color: var(--warn-text);
+                 border-radius: 10px; padding: 12px 16px; margin-bottom: 20px; font-size: 0.95rem; }
+  .test-banner b { display: block; font-size: 1rem; margin-bottom: 2px; }
+  .test-banner a { color: inherit; font-weight: 600; }
+  footer.build { color: var(--dim); font-size: 0.8rem; margin-top: 32px; padding-top: 12px; border-top: 1px solid var(--line); }
+  footer.build a { color: inherit; }
+  footer.build code { font-size: 0.78rem; }
   .card > div { flex: 1 1 280px; }
   h2.section { font-size: 1.1rem; margin: 28px 0 12px; }
   .pill { cursor: pointer; font-size: 14px; font-weight: 500; padding: 10px 24px; color: #fff;
@@ -34,6 +43,7 @@
 </head>
 <body>
 <main>
+  <div id="test-banner" class="test-banner" hidden></div>
   <h1>SuperLiveTimer Firmware</h1>
   <p class="lead">Flash a SuperLiveTimer device straight from your browser. Needs Chrome or Edge on a computer (not a phone).</p>
 
@@ -83,7 +93,30 @@
     <button id="license-btn" class="pill" type="button">Restore license</button>
     <pre id="license-log" hidden></pre>
   </div>
+  <footer id="build-info" class="build" hidden></footer>
 </main>
+
+<script>
+  // build-info.json is written by the firmware workflow; local `make firmware` builds don't have it.
+  fetch("build-info.json", { cache: "no-store" }).then((r) => (r.ok ? r.json() : null)).then((info) => {
+    if (!info) return;
+    const esc = (t) => String(t).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
+    const built = new Date(info.built).toLocaleString();
+    if (info.channel === "test") {
+      document.title = "TEST · " + document.title;
+      const banner = document.getElementById("test-banner");
+      banner.innerHTML = `<b>Test build: not for event use</b>From <code>${esc(info.ref)}</code> at <code>${esc(info.commit)}</code>, built ${esc(built)}. ` +
+        `Release firmware is at <a href="../">the main flasher page</a>.`;
+      banner.hidden = false;
+    }
+    const footer = document.getElementById("build-info");
+    footer.innerHTML = `${info.channel === "test" ? "Test" : "Release"} build of <code>${esc(info.commit)}</code> (${esc(info.ref)}), ` +
+      `<a href="${esc(info.run)}">built</a> ${esc(built)}<br>` +
+      `Cores: ${info.cores.map((c) => `<code>${esc(c)}</code>`).join(", ")}<br>` +
+      `Libraries: ${info.libraries.map((l) => `<code>${esc(l)}</code>`).join(", ")}`;
+    footer.hidden = false;
+  }).catch(() => {});
+</script>
 
 <script type="module">
   const ESPTOOL_URL = "https://unpkg.com/esptool-js@0.7.0/bundle.js";
