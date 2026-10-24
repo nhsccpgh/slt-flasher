@@ -1,9 +1,9 @@
 {
   "channel": "release",
-  "ref": "v1.1",
-  "commit": "420ca83",
-  "built": "2026-10-21T19:38:32Z",
-  "run": "https://github.com/nhsccpgh/SuperLiveTimer/actions/runs/39662013694",
+  "ref": "v1.2",
+  "commit": "f64006f",
+  "built": "2026-10-24T21:46:51Z",
+  "run": "https://github.com/nhsccpgh/SuperLiveTimer/actions/runs/40134999741",
   "cores": [
     "Heltec-esp32:esp32@3.0.3"
   ],

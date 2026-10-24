@@ -1,9 +1,9 @@
 {
   "name": "SuperLiveTimer TFT Receiver (Heltec Vision Master T190)",
-  "version": "v1.1",
+  "version": "v1.2",
   "new_install_prompt_erase": true,
   "new_install_improv_wait_time": 0,
   "builds": [
-    { "chipFamily": "ESP32-S3", "parts": [ { "path": "vmt190-v1.1.bin", "offset": 0 } ] }
+    { "chipFamily": "ESP32-S3", "parts": [ { "path": "vmt190-v1.2.bin", "offset": 0 } ] }
   ]
 }
