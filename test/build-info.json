@@ -1,9 +1,9 @@
 {
   "channel": "test",
   "ref": "dev",
-  "commit": "f5addc7",
-  "built": "2026-10-21T19:45:29Z",
-  "run": "https://github.com/nhsccpgh/SuperLiveTimer/actions/runs/39662534092",
+  "commit": "5d701c8",
+  "built": "2026-10-24T22:19:20Z",
+  "run": "https://github.com/nhsccpgh/SuperLiveTimer/actions/runs/40137146857",
   "cores": [
     "Heltec-esp32:esp32@3.3.8"
   ],

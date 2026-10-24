@@ -1,9 +1,9 @@
 {
   "name": "SuperLiveTimer Barcode Receiver (Heltec Wireless Paper) (test build)",
-  "version": "v1.1-2-gf5addc7",
+  "version": "v1.2-6-g5d701c8",
   "new_install_prompt_erase": true,
   "new_install_improv_wait_time": 0,
   "builds": [
-    { "chipFamily": "ESP32-S3", "parts": [ { "path": "barcode-v1.1-2-gf5addc7.bin", "offset": 0 } ] }
+    { "chipFamily": "ESP32-S3", "parts": [ { "path": "barcode-v1.2-6-g5d701c8.bin", "offset": 0 } ] }
   ]
 }
